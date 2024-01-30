@@ -3,6 +3,7 @@ package org.example;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class ParkingLotTest {
     @Test
@@ -37,9 +38,9 @@ class ParkingLotTest {
         Car car = new Car("JH17A1234", Car.Color.BLUE);
         ParkingLot parkingLot = new ParkingLot(1);
 
-        int slotNo = parkingLot.park(car);
+        ParkId parkId = parkingLot.park(car);
 
-        assertEquals(0, slotNo);
+        assertEquals(new ParkId(0,0), parkId);
     }
 
     @Test
@@ -48,11 +49,11 @@ class ParkingLotTest {
         Car car2 = new Car("JH17A1236", Car.Color.BLUE);
         ParkingLot parkingLot = new ParkingLot(3);
 
-        int slotNo1 = parkingLot.park(car1);
-        int slotNo2 = parkingLot.park(car2);
+        ParkId parkId1 = parkingLot.park(car1);
+        ParkId parkId2 = parkingLot.park(car2);
 
-        assertEquals(0, slotNo1);
-        assertEquals(1, slotNo2);
+        assertEquals(new ParkId(0,0), parkId1);
+        assertEquals(new ParkId(0,1), parkId2);
     }
 
     @Test
@@ -61,10 +62,10 @@ class ParkingLotTest {
         Car car2 = new Car("JH17A1236", Car.Color.BLUE);
         ParkingLot parkingLot = new ParkingLot(1);
 
-        int slotNo1 = parkingLot.park(car1);
+        ParkId parkId1 = parkingLot.park(car1);
 
         assertThrows(RuntimeException.class, () -> {
-            int slotNo2 = parkingLot.park(car2);
+            ParkId parkId2 = parkingLot.park(car2);
         });
     }
 
@@ -152,9 +153,9 @@ class ParkingLotTest {
         ParkingLot parkingLot = new ParkingLot(2);
         Car car = new Car("JH17A1246", Car.Color.BLACK);
 
-        int slotNo = parkingLot.park(car);
+        ParkId parkId1 = parkingLot.park(car);
 
-        assertNotEquals(new Car("JH17A8888", Car.Color.BLACK), parkingLot.unPark(slotNo));
+        assertNotEquals(new Car("JH17A8888", Car.Color.BLACK), parkingLot.unPark(parkId1.slotNumber()));
 
     }
 
@@ -163,9 +164,9 @@ class ParkingLotTest {
         ParkingLot parkingLot = new ParkingLot(2);
         Car car = new Car("JH17A1246", Car.Color.BLACK);
 
-        int slotNo = parkingLot.park(car);
+        ParkId parkId = parkingLot.park(car);
 
-        assertEquals(new Car("JH17A1246", Car.Color.BLACK), parkingLot.unPark(slotNo));
+        assertEquals(new Car("JH17A1246", Car.Color.BLACK), parkingLot.unPark(parkId.slotNumber()));
 
     }
 
@@ -175,14 +176,55 @@ class ParkingLotTest {
         Car car1 = new Car("JH17A1246", Car.Color.BLACK);
         Car car2 = new Car("JH17A1241", Car.Color.BLACK);
 
-        int slotNo1 = parkingLot.park(car1);
-        int slotNo2 = parkingLot.park(car2);
+        ParkId parkId1 = parkingLot.park(car1);
+        ParkId parkId2 = parkingLot.park(car2);
 
         assertTrue(parkingLot.isSlotFull());
 
-        parkingLot.unPark(slotNo2);
+        parkingLot.unPark(parkId2.slotNumber());
 
         assertFalse(parkingLot.isSlotFull());
 
     }
+
+    @Test
+    public void TestAddParkable() {
+        ParkingStation parkingStation = mock(ParkingStation.class);
+
+        ParkingLot parkingLot = new ParkingLot(2);
+
+        parkingLot.addParkable(parkingStation);
+
+        // Using Mockito to verify that the addParkable method was called with the correct argument
+        verify(parkingStation).addParkable(parkingLot);
+    }
+
+    @Test
+    public void TestAddingMultipleParkable() {
+        ParkingStation parkingStation1 = mock(ParkingStation.class);
+        ParkingStation parkingStation2 = mock(ParkingStation.class);
+        ParkingStation parkingStation3 = mock(ParkingStation.class);
+
+        ParkingLot parkingLot = new ParkingLot(2);
+
+        parkingLot.addParkable(parkingStation1);
+        parkingLot.addParkable(parkingStation2);
+        parkingLot.addParkable(parkingStation3);
+
+        verify(parkingStation1).addParkable(parkingLot);
+        verify(parkingStation2).addParkable(parkingLot);
+        verify(parkingStation3).addParkable(parkingLot);
+    }
+
+    @Test
+    public void TestParkingLotCanNotbeAdded() {
+        ParkingLot parkingLot = new ParkingLot(2);
+        ParkingLot parkingLot2 = new ParkingLot(2);
+
+        assertThrows(RuntimeException.class, () -> {
+            parkingLot.addParkable(parkingLot2);
+        });
+    }
+
+
 }

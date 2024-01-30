@@ -2,7 +2,7 @@ package org.example;
 
 import java.util.*;
 
-public class ParkingLot {
+public class ParkingLot implements Parkable {
 
     private final Map<Car.Color, Integer> mapColor;
     private final Map<Integer, Car> cars;
@@ -31,7 +31,8 @@ public class ParkingLot {
         return slots.isEmpty();
     }
 
-    public int park(Car car) {
+    @Override
+    public ParkId park(Car car) {
         if (isSlotFull()) {
             throw new RuntimeException();
         }
@@ -42,7 +43,7 @@ public class ParkingLot {
 
         int closestSlot = slots.poll();
         cars.put(closestSlot, car);
-        return closestSlot;
+        return new ParkId(0, closestSlot);
     }
 
     public Car unPark(int slotNo) {
@@ -61,5 +62,14 @@ public class ParkingLot {
     public int countByColor(Car.Color color) {
         return mapColor.getOrDefault(color, 0);
     }
+
+    @Override
+    public void addParkable(Parkable parkable) {
+        if (parkable instanceof ParkingLot) {
+            throw new RuntimeException();
+        }
+        parkable.addParkable(this);
+    }
+
 
 }

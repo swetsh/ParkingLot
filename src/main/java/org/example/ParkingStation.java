@@ -2,12 +2,14 @@ package org.example;
 
 import java.util.*;
 
-public class ParkingStation {
+public class ParkingStation implements Parkable {
+
     private ParkingLot activeLot;
     private boolean isStationFull;
 
     private final LinkedList<ParkingLot> emptyLots;
     private final LinkedList<ParkingLot> filledLots;
+    private Map<ParkingLot, Integer> lotId;
 
     public ParkingStation(int totalLot, int slotPerLot) {
         if (totalLot <= 0) {
@@ -17,9 +19,12 @@ public class ParkingStation {
 
         this.emptyLots = new LinkedList<>();
         this.filledLots = new LinkedList<>();
+        this.lotId = new HashMap<>();
 
         for (int i=0; i<totalLot; i++) {
-            this.emptyLots.addLast(new ParkingLot(slotPerLot));
+            ParkingLot parkingLot = new ParkingLot(slotPerLot);
+            this.emptyLots.addLast(parkingLot);
+            lotId.put(parkingLot, i);
         }
         this.activeLot = this.emptyLots.removeLast();
 
@@ -44,13 +49,20 @@ public class ParkingStation {
         }
     }
 
-    public int park(Car car) {
-        int slot = this.activeLot.park(car);
+    @Override
+    public ParkId park(Car car) {
+        int slot = this.activeLot.park(car).slotNumber()    ;
+        int lot = lotId.get(this.activeLot);
         this.changeActiveLot();
-        return slot;
+        return new ParkId(lot, slot);
     }
 
-    public int unPark(Car car) {
-        return 0;
+    @Override
+    public void addParkable(Parkable parkable) {
+        if (parkable instanceof ParkingStation) {
+            throw new RuntimeException();
+        }
+        parkable.addParkable(this);
     }
+
 }
